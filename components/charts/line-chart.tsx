@@ -52,6 +52,7 @@ function CustomTooltip({
     const data = payload[0].payload || {};
     const value = payload[0].value;
     const date = label ? new Date(String(label)) : new Date();
+    const volume = typeof data.volume === 'number' ? data.volume : null;
 
     return (
       <div className="rounded-lg border bg-background p-3 shadow-md">
@@ -66,9 +67,9 @@ function CustomTooltip({
               })
             : value}
         </p>
-        {data.volume && typeof data.volume === 'number' && (
+        {volume !== null && (
           <p className="text-xs text-muted-foreground">
-            Volume: {data.volume.toLocaleString()}
+            Volume: {volume.toLocaleString()}
           </p>
         )}
       </div>
