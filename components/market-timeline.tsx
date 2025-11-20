@@ -463,7 +463,7 @@ export function MarketTimeline({ indicators, className }: MarketTimelineProps) {
         const existingInstance = timelineInstance.current;
         if (existingInstance) {
           console.log('[Timeline] Destroying existing timeline instance');
-          existingInstance.destroy();
+          (existingInstance as any).destroy();
           timelineInstance.current = null;
         }
 
@@ -736,7 +736,7 @@ export function MarketTimeline({ indicators, className }: MarketTimelineProps) {
           const delayedInstance = timelineInstance.current;
           if (delayedInstance) {
             console.log('[Timeline] Destroying timeline instance (delayed)');
-            delayedInstance.destroy();
+            (delayedInstance as any).destroy();
             timelineInstance.current = null;
           }
           isInitializingRef.current = false;
@@ -745,7 +745,7 @@ export function MarketTimeline({ indicators, className }: MarketTimelineProps) {
         const cleanupInstance = timelineInstance.current;
         if (cleanupInstance) {
           console.log('[Timeline] Destroying timeline instance');
-          cleanupInstance.destroy();
+          (cleanupInstance as any).destroy();
           timelineInstance.current = null;
         }
       }
