@@ -9,10 +9,12 @@ import { Badge } from '@/components/ui/badge';
 import { IndicatorGrid } from '@/components/dashboard/indicator-grid';
 import { AlertTopBar } from '@/components/alert-top-bar';
 import { ThemeToggle } from '@/components/theme-toggle';
-import { HistoricalComparisonChart } from '@/components/charts/historical-comparison-chart';
+import { Navbar } from '@/components/layout/navbar';
 import { NewsFeed } from '@/components/news/news-feed';
-import { MarketTimeline } from '@/components/market-timeline';
 import { EnhancedCrashRiskCard } from '@/src/components/enhanced-crash-risk-card';
+import MarketSentiment from '@/components/MarketSentiment';
+import HighImpactNews from '@/components/HighImpactNews';
+import Link from 'next/link';
 
 export default function MarketCrashDashboard() {
   // Fetch real market data
@@ -27,18 +29,21 @@ export default function MarketCrashDashboard() {
       {/* Header */}
       <header className="bg-slate-800 border-b border-slate-700 p-6 sticky top-0 z-40">
         <div className="mx-auto max-w-7xl flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold text-white">
+          <Link href="/">
+            <h1 className="text-3xl font-bold text-white hover:text-slate-200 transition-colors cursor-pointer">
               📊 Market Crash Monitor
             </h1>
-          </div>
+          </Link>
           
           <ThemeToggle />
         </div>
       </header>
 
-      {/* Alert Top Bar - Positioned right below header */}
-      <div className="sticky top-[88px] z-30 w-full">
+      {/* Navigation Bar */}
+      <Navbar />
+
+      {/* Alert Top Bar - Positioned right below navigation */}
+      <div className="sticky top-[150px] z-30 w-full">
         <AlertTopBar indicators={economicIndicators} />
       </div>
 
@@ -603,31 +608,15 @@ export default function MarketCrashDashboard() {
           <IndicatorGrid />
         </div>
 
-        {/* Historical Crash Comparison */}
-        <section className="mb-4 lg:mb-8 mt-4 lg:mt-8">
-          <h2 className="text-xl lg:text-2xl font-bold mb-2 lg:mb-4">
-            📉 Historical Crash Comparison
-          </h2>
-          <p className="text-slate-400 mb-4 lg:mb-6 text-sm lg:text-base">
-            Current pattern vs 1929 and 2008 crashes (indexed to 100 at peak)
-          </p>
-          <div className="bg-slate-800 rounded-lg p-4 lg:p-6 border border-slate-700">
-            <HistoricalComparisonChart />
-          </div>
-        </section>
+        {/* High Impact USD News */}
+        <div className="mt-4 lg:mt-8">
+          <HighImpactNews />
+        </div>
 
-        {/* 18-Month Timeline - POSITIONED AFTER HISTORICAL COMPARISON */}
-        <section id="timeline" className="mb-4 lg:mb-8">
-          <h2 className="text-xl lg:text-2xl font-bold mb-2 lg:mb-4">
-            📅 18-Month Monitoring Timeline
-          </h2>
-          <p className="text-slate-400 mb-4 lg:mb-6 text-sm lg:text-base">
-            November 2025 to May 2027 - Track crash indicators and milestones over time
-          </p>
-          <div className="bg-slate-800 rounded-lg p-4 lg:p-6 border border-slate-700">
-            <MarketTimeline indicators={economicIndicators} />
-          </div>
-        </section>
+        {/* Market Sentiment */}
+        <div className="mt-4 lg:mt-8">
+          <MarketSentiment />
+        </div>
           </div>
 
           {/* News Feed Sidebar */}

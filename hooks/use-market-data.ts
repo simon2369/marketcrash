@@ -111,15 +111,26 @@ export function useMarketData(): UseMarketDataReturn {
           try {
             const response = await fetch('/api/market-data/dowjones');
             const data = await response.json();
-            if (!response.ok || data.error) {
-              console.warn('Dow Jones API error:', data.error || `Status ${response.status}`);
-              // Don't return 0, throw error so React Query can retry
-              throw new Error(data.error || `Failed to fetch Dow Jones data: ${response.status}`);
+            if (data.error) {
+              // Return fallback data instead of throwing
+              console.warn('Dow Jones API error:', data.error);
+              return {
+                value: 0,
+                change: 0,
+                changePercent: 0,
+                timestamp: new Date().toISOString(),
+              } as MarketDataResponse;
             }
             return data as MarketDataResponse;
           } catch (error) {
+            // Return fallback data on network errors
             console.error('Error fetching Dow Jones:', error);
-            throw error; // Let React Query handle retries
+            return {
+              value: 0,
+              change: 0,
+              changePercent: 0,
+              timestamp: new Date().toISOString(),
+            } as MarketDataResponse;
           }
         },
         refetchInterval: 30000,
@@ -135,15 +146,26 @@ export function useMarketData(): UseMarketDataReturn {
           try {
             const response = await fetch('/api/market-data/nasdaq');
             const data = await response.json();
-            if (!response.ok || data.error) {
-              console.warn('Nasdaq API error:', data.error || `Status ${response.status}`);
-              // Don't return 0, throw error so React Query can retry
-              throw new Error(data.error || `Failed to fetch Nasdaq data: ${response.status}`);
+            if (data.error) {
+              // Return fallback data instead of throwing
+              console.warn('Nasdaq API error:', data.error);
+              return {
+                value: 0,
+                change: 0,
+                changePercent: 0,
+                timestamp: new Date().toISOString(),
+              } as MarketDataResponse;
             }
             return data as MarketDataResponse;
           } catch (error) {
+            // Return fallback data on network errors
             console.error('Error fetching Nasdaq:', error);
-            throw error; // Let React Query handle retries
+            return {
+              value: 0,
+              change: 0,
+              changePercent: 0,
+              timestamp: new Date().toISOString(),
+            } as MarketDataResponse;
           }
         },
         refetchInterval: 30000,
