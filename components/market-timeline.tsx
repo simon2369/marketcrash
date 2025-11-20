@@ -460,9 +460,10 @@ export function MarketTimeline({ indicators, className }: MarketTimelineProps) {
           hasExistingInstance: !!timelineInstance.current
         });
         
-        if (timelineInstance.current) {
+        const existingInstance = timelineInstance.current;
+        if (existingInstance) {
           console.log('[Timeline] Destroying existing timeline instance');
-          timelineInstance.current.destroy();
+          existingInstance.destroy();
           timelineInstance.current = null;
         }
 
@@ -732,17 +733,19 @@ export function MarketTimeline({ indicators, className }: MarketTimelineProps) {
           rafIdsRef.current.forEach(id => cancelAnimationFrame(id));
           rafIdsRef.current = [];
           
-          if (timelineInstance.current) {
+          const delayedInstance = timelineInstance.current;
+          if (delayedInstance) {
             console.log('[Timeline] Destroying timeline instance (delayed)');
-            timelineInstance.current.destroy();
+            delayedInstance.destroy();
             timelineInstance.current = null;
           }
           isInitializingRef.current = false;
         }, 500); // Increased delay to 500ms
       } else {
-        if (timelineInstance.current) {
+        const cleanupInstance = timelineInstance.current;
+        if (cleanupInstance) {
           console.log('[Timeline] Destroying timeline instance');
-          timelineInstance.current.destroy();
+          cleanupInstance.destroy();
           timelineInstance.current = null;
         }
       }
