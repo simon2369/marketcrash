@@ -246,7 +246,7 @@ export function CrashTimeline() {
           followMouse: true,
           overflowMethod: 'cap',
         },
-      };
+      } as any;
 
       // Initialize timeline
       try {

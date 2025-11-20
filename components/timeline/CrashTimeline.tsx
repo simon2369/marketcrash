@@ -43,70 +43,70 @@ export function CrashTimeline({
         title: "High VIX Spike",
         description: "VIX reaches 28.5",
         severity: "high",
-        category: "market",
+        category: "market-crash",
       },
       {
         date: "2025-12-01",
         title: "Fed Rate Decision",
         description: "Federal Reserve announces rate cut",
         severity: "medium",
-        category: "economic",
+        category: "policy-change",
       },
       {
         date: "2026-01-15",
         title: "Inflation Report",
         description: "CPI exceeds expectations",
         severity: "high",
-        category: "economic",
+        category: "economic-indicator",
       },
       {
         date: "2026-02-20",
         title: "Market Correction",
         description: "S&P 500 drops 5%",
         severity: "critical",
-        category: "market",
+        category: "market-crash",
       },
       {
         date: "2026-04-10",
         title: "Fed Emergency Meeting",
         description: "Emergency rate adjustment",
         severity: "critical",
-        category: "economic",
+        category: "policy-change",
       },
       {
         date: "2026-06-01",
         title: "Unemployment Spike",
         description: "Unemployment rate increases",
         severity: "high",
-        category: "economic",
+        category: "economic-indicator",
       },
       {
         date: "2026-08-15",
         title: "Market Recovery",
         description: "Markets show signs of stabilization",
         severity: "low",
-        category: "market",
+        category: "market-crash",
       },
       {
         date: "2026-10-01",
         title: "GDP Growth",
         description: "Positive GDP growth reported",
         severity: "low",
-        category: "economic",
+        category: "economic-indicator",
       },
       {
         date: "2026-12-15",
         title: "Fed Policy Normalization",
         description: "Fed returns to normal policy",
         severity: "medium",
-        category: "economic",
+        category: "policy-change",
       },
       {
         date: "2027-01-20",
         title: "Market Stability",
         description: "Markets stabilize",
         severity: "low",
-        category: "market",
+        category: "market-crash",
       },
     ];
 
@@ -136,13 +136,13 @@ export function CrashTimeline({
 
       // Group by category
       switch (event.category) {
-        case "market":
+        case "market-crash":
           group = "market-events";
           break;
-        case "economic":
+        case "economic-indicator":
           group = "economic-indicators";
           break;
-        case "political":
+        case "policy-change":
           group = "fed-actions";
           break;
         default:
@@ -213,8 +213,9 @@ export function CrashTimeline({
 
     // Cleanup on unmount
     return () => {
-      if (timelineInstanceRef.current) {
-        timelineInstanceRef.current.destroy();
+      const instance = timelineInstanceRef.current;
+      if (instance) {
+        (instance as any).destroy();
         timelineInstanceRef.current = null;
       }
     };

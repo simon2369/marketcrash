@@ -1,8 +1,8 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { getMarketData } from "@/lib/api/marketData";
-import type { SP500Data, VIXData, MarketData } from "@/lib/types";
+import { getStockData, type MarketDataResponse } from "@/lib/api/marketData";
+import type { MarketData } from "@/lib/types";
 
 const REFETCH_INTERVAL = 30 * 1000; // 30 seconds
 
@@ -15,7 +15,7 @@ export function useSP500Data() {
     isLoading,
     error,
     refetch,
-  } = useQuery<SP500Data, Error>({
+  } = useQuery<MarketDataResponse, Error>({
     queryKey: ["sp500"],
     queryFn: async () => {
       const response = await fetch("/api/market-data/sp500");
@@ -47,7 +47,7 @@ export function useVIXData() {
     isLoading,
     error,
     refetch,
-  } = useQuery<VIXData, Error>({
+  } = useQuery<MarketDataResponse, Error>({
     queryKey: ["vix"],
     queryFn: async () => {
       const response = await fetch("/api/market-data/vix");
@@ -79,9 +79,9 @@ export function useMarketData(symbol: string, enabled: boolean = true) {
     isLoading,
     error,
     refetch,
-  } = useQuery<MarketData, Error>({
+  } = useQuery<MarketDataResponse, Error>({
     queryKey: ["market-data", symbol],
-    queryFn: () => getMarketData(symbol),
+    queryFn: () => getStockData(symbol),
     enabled: enabled && !!symbol,
     refetchInterval: REFETCH_INTERVAL,
     refetchIntervalInBackground: true,

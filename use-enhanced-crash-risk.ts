@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useMarketData } from '@/hooks/use-market-data';
 import { useEconomicIndicators } from '@/hooks/use-economic-indicators';
-import { calculateEnhancedCrashRisk, CrashRiskBreakdown } from '@/lib/enhanced-crash-risk';
+import { calculateEnhancedCrashRisk, CrashRiskBreakdown } from '@/src/lib/enhanced-crash-risk';
 
 /**
  * Return type for useEnhancedCrashRiskScore hook

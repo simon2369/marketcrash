@@ -590,6 +590,8 @@ export function MarketTimeline({ indicators, className }: MarketTimelineProps) {
                       forceResize();
                       
                       // Check if timeline DOM elements exist and are visible
+                      if (!timelineRef.current) return;
+                      
                       const timelineElements = timelineRef.current.querySelectorAll('.vis-timeline, .vis-panel, .vis-item');
                       const visTimeline = timelineRef.current.querySelector('.vis-timeline') as HTMLElement;
                       
