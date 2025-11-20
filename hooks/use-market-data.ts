@@ -18,6 +18,16 @@ export interface CombinedMarketData {
     microsoft: MarketDataResponse;
     nvidia: MarketDataResponse;
   };
+  crypto: {
+    bitcoin: MarketDataResponse;
+    ethereum: MarketDataResponse;
+    xrp: MarketDataResponse;
+  };
+  commodities: {
+    gold: MarketDataResponse;
+    silver: MarketDataResponse;
+    oil: MarketDataResponse;
+  };
 }
 
 /**
@@ -52,6 +62,14 @@ export interface UseMarketDataReturn {
  * ```
  */
 export function useMarketData(): UseMarketDataReturn {
+  // Helper function to create fallback data
+  const createFallback = (): MarketDataResponse => ({
+    value: 0,
+    change: 0,
+    changePercent: 0,
+    timestamp: new Date().toISOString(),
+  });
+
   const queries = useQueries({
     queries: [
       {
@@ -295,6 +313,116 @@ export function useMarketData(): UseMarketDataReturn {
         retry: 2,
         retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
       },
+      // Crypto queries
+      {
+        queryKey: ['market-data', 'crypto', 'BTC'],
+        queryFn: async () => {
+          const response = await fetch('/api/market-data/crypto/BTC');
+          const data = await response.json();
+          if (!response.ok || data.error) {
+            console.warn('BTC API error:', data.error || `Status ${response.status}`);
+            return createFallback();
+          }
+          return data as MarketDataResponse;
+        },
+        refetchInterval: 30000,
+        refetchIntervalInBackground: true,
+        staleTime: 25000,
+        gcTime: 5 * 60 * 1000,
+        retry: 2,
+        retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+      },
+      {
+        queryKey: ['market-data', 'crypto', 'ETH'],
+        queryFn: async () => {
+          const response = await fetch('/api/market-data/crypto/ETH');
+          const data = await response.json();
+          if (!response.ok || data.error) {
+            console.warn('ETH API error:', data.error || `Status ${response.status}`);
+            return createFallback();
+          }
+          return data as MarketDataResponse;
+        },
+        refetchInterval: 30000,
+        refetchIntervalInBackground: true,
+        staleTime: 25000,
+        gcTime: 5 * 60 * 1000,
+        retry: 2,
+        retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+      },
+      {
+        queryKey: ['market-data', 'crypto', 'XRP'],
+        queryFn: async () => {
+          const response = await fetch('/api/market-data/crypto/XRP');
+          const data = await response.json();
+          if (!response.ok || data.error) {
+            console.warn('XRP API error:', data.error || `Status ${response.status}`);
+            return createFallback();
+          }
+          return data as MarketDataResponse;
+        },
+        refetchInterval: 30000,
+        refetchIntervalInBackground: true,
+        staleTime: 25000,
+        gcTime: 5 * 60 * 1000,
+        retry: 2,
+        retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+      },
+      // Commodities queries
+      {
+        queryKey: ['market-data', 'commodities', 'GOLD'],
+        queryFn: async () => {
+          const response = await fetch('/api/market-data/commodities/GOLD');
+          const data = await response.json();
+          if (!response.ok || data.error) {
+            console.warn('GOLD API error:', data.error || `Status ${response.status}`);
+            return createFallback();
+          }
+          return data as MarketDataResponse;
+        },
+        refetchInterval: 30000,
+        refetchIntervalInBackground: true,
+        staleTime: 25000,
+        gcTime: 5 * 60 * 1000,
+        retry: 2,
+        retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+      },
+      {
+        queryKey: ['market-data', 'commodities', 'SILVER'],
+        queryFn: async () => {
+          const response = await fetch('/api/market-data/commodities/SILVER');
+          const data = await response.json();
+          if (!response.ok || data.error) {
+            console.warn('SILVER API error:', data.error || `Status ${response.status}`);
+            return createFallback();
+          }
+          return data as MarketDataResponse;
+        },
+        refetchInterval: 30000,
+        refetchIntervalInBackground: true,
+        staleTime: 25000,
+        gcTime: 5 * 60 * 1000,
+        retry: 2,
+        retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+      },
+      {
+        queryKey: ['market-data', 'commodities', 'OIL'],
+        queryFn: async () => {
+          const response = await fetch('/api/market-data/commodities/OIL');
+          const data = await response.json();
+          if (!response.ok || data.error) {
+            console.warn('OIL API error:', data.error || `Status ${response.status}`);
+            return createFallback();
+          }
+          return data as MarketDataResponse;
+        },
+        refetchInterval: 30000,
+        refetchIntervalInBackground: true,
+        staleTime: 25000,
+        gcTime: 5 * 60 * 1000,
+        retry: 2,
+        retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+      },
     ],
   });
 
@@ -310,6 +438,12 @@ export function useMarketData(): UseMarketDataReturn {
     metaQuery,
     msftQuery,
     nvdaQuery,
+    btcQuery,
+    ethQuery,
+    xrpQuery,
+    goldQuery,
+    silverQuery,
+    oilQuery,
   ] = queries;
 
   // Combine loading states (check all queries)
@@ -324,18 +458,16 @@ export function useMarketData(): UseMarketDataReturn {
     tslaQuery.isLoading ||
     metaQuery.isLoading ||
     msftQuery.isLoading ||
-    nvdaQuery.isLoading;
+    nvdaQuery.isLoading ||
+    btcQuery.isLoading ||
+    ethQuery.isLoading ||
+    xrpQuery.isLoading ||
+    goldQuery.isLoading ||
+    silverQuery.isLoading ||
+    oilQuery.isLoading;
 
   // Combine errors - return first error found (only from critical indices)
   const error = sp500Query.error || dowjonesQuery.error || nasdaqQuery.error || vixQuery.error || null;
-
-  // Helper function to create fallback data
-  const createFallback = (): MarketDataResponse => ({
-    value: 0,
-    change: 0,
-    changePercent: 0,
-    timestamp: new Date().toISOString(),
-  });
 
   // Combine data - always return data (with fallbacks if needed)
   const data: CombinedMarketData = {
@@ -352,6 +484,16 @@ export function useMarketData(): UseMarketDataReturn {
       microsoft: msftQuery.data || createFallback(),
       nvidia: nvdaQuery.data || createFallback(),
     },
+    crypto: {
+      bitcoin: btcQuery.data || createFallback(),
+      ethereum: ethQuery.data || createFallback(),
+      xrp: xrpQuery.data || createFallback(),
+    },
+    commodities: {
+      gold: goldQuery.data || createFallback(),
+      silver: silverQuery.data || createFallback(),
+      oil: oilQuery.data || createFallback(),
+    },
   };
 
   // Refetch function that refetches all queries
@@ -367,6 +509,12 @@ export function useMarketData(): UseMarketDataReturn {
     metaQuery.refetch();
     msftQuery.refetch();
     nvdaQuery.refetch();
+    btcQuery.refetch();
+    ethQuery.refetch();
+    xrpQuery.refetch();
+    goldQuery.refetch();
+    silverQuery.refetch();
+    oilQuery.refetch();
   };
 
   return {

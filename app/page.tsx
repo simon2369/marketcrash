@@ -381,6 +381,198 @@ export default function MarketCrashDashboard() {
                       </div>
                     </div>
                   </div>
+
+                  {/* Major Cryptocurrencies Section */}
+                  <div className="mt-6 pt-6 border-t border-slate-700">
+                    <h3 className="text-sm font-semibold text-muted-foreground mb-4">Major Cryptocurrencies</h3>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                      {/* Bitcoin */}
+                      <div>
+                        <div className="flex items-baseline gap-2 flex-wrap">
+                          <span className="text-xl font-bold text-foreground">
+                            {marketData.crypto.bitcoin.value > 0 ? (
+                              `$${marketData.crypto.bitcoin.value.toLocaleString('en-US', {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              })}`
+                            ) : (
+                              <span className="text-muted-foreground text-sm">Loading...</span>
+                            )}
+                          </span>
+                          {marketData.crypto.bitcoin.changePercent !== undefined && marketData.crypto.bitcoin.value > 0 && (
+                            <Badge
+                              variant="outline"
+                              className={`text-xs ${
+                                marketData.crypto.bitcoin.changePercent >= 0
+                                  ? 'text-green-600 dark:text-green-400 border-green-500/50'
+                                  : 'text-red-600 dark:text-red-400 border-red-500/50'
+                              }`}
+                            >
+                              {marketData.crypto.bitcoin.changePercent >= 0 ? '+' : ''}
+                              {marketData.crypto.bitcoin.changePercent.toFixed(2)}%
+                            </Badge>
+                          )}
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1">Bitcoin (BTC)</p>
+                      </div>
+
+                      {/* Ethereum */}
+                      <div>
+                        <div className="flex items-baseline gap-2 flex-wrap">
+                          <span className="text-xl font-bold text-foreground">
+                            {marketData.crypto.ethereum.value > 0 ? (
+                              `$${marketData.crypto.ethereum.value.toLocaleString('en-US', {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              })}`
+                            ) : (
+                              <span className="text-muted-foreground text-sm">Loading...</span>
+                            )}
+                          </span>
+                          {marketData.crypto.ethereum.changePercent !== undefined && marketData.crypto.ethereum.value > 0 && (
+                            <Badge
+                              variant="outline"
+                              className={`text-xs ${
+                                marketData.crypto.ethereum.changePercent >= 0
+                                  ? 'text-green-600 dark:text-green-400 border-green-500/50'
+                                  : 'text-red-600 dark:text-red-400 border-red-500/50'
+                              }`}
+                            >
+                              {marketData.crypto.ethereum.changePercent >= 0 ? '+' : ''}
+                              {marketData.crypto.ethereum.changePercent.toFixed(2)}%
+                            </Badge>
+                          )}
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1">Ethereum (ETH)</p>
+                      </div>
+
+                      {/* XRP */}
+                      <div>
+                        <div className="flex items-baseline gap-2 flex-wrap">
+                          <span className="text-xl font-bold text-foreground">
+                            {marketData.crypto.xrp.value > 0 ? (
+                              `$${marketData.crypto.xrp.value.toLocaleString('en-US', {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              })}`
+                            ) : (
+                              <span className="text-muted-foreground text-sm">Loading...</span>
+                            )}
+                          </span>
+                          {marketData.crypto.xrp.changePercent !== undefined && marketData.crypto.xrp.value > 0 && (
+                            <Badge
+                              variant="outline"
+                              className={`text-xs ${
+                                marketData.crypto.xrp.changePercent >= 0
+                                  ? 'text-green-600 dark:text-green-400 border-green-500/50'
+                                  : 'text-red-600 dark:text-red-400 border-red-500/50'
+                              }`}
+                            >
+                              {marketData.crypto.xrp.changePercent >= 0 ? '+' : ''}
+                              {marketData.crypto.xrp.changePercent.toFixed(2)}%
+                            </Badge>
+                          )}
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1">XRP</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Commodities Section */}
+                  <div className="mt-6 pt-6 border-t border-slate-700">
+                    <h3 className="text-sm font-semibold text-muted-foreground mb-4">Commodities</h3>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                      {/* Gold */}
+                      <div>
+                        <div className="flex items-baseline gap-2 flex-wrap">
+                          <span className="text-xl font-bold text-foreground">
+                            {marketData.commodities.gold.value > 0 ? (
+                              `$${marketData.commodities.gold.value.toLocaleString('en-US', {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              })}`
+                            ) : (
+                              <span className="text-muted-foreground text-sm">Loading...</span>
+                            )}
+                          </span>
+                          {marketData.commodities.gold.changePercent !== undefined && marketData.commodities.gold.value > 0 && (
+                            <Badge
+                              variant="outline"
+                              className={`text-xs ${
+                                marketData.commodities.gold.changePercent >= 0
+                                  ? 'text-green-600 dark:text-green-400 border-green-500/50'
+                                  : 'text-red-600 dark:text-red-400 border-red-500/50'
+                              }`}
+                            >
+                              {marketData.commodities.gold.changePercent >= 0 ? '+' : ''}
+                              {marketData.commodities.gold.changePercent.toFixed(2)}%
+                            </Badge>
+                          )}
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1">Gold (XAU/USD)</p>
+                      </div>
+
+                      {/* Silver */}
+                      <div>
+                        <div className="flex items-baseline gap-2 flex-wrap">
+                          <span className="text-xl font-bold text-foreground">
+                            {marketData.commodities.silver.value > 0 ? (
+                              `$${marketData.commodities.silver.value.toLocaleString('en-US', {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              })}`
+                            ) : (
+                              <span className="text-muted-foreground text-sm">Loading...</span>
+                            )}
+                          </span>
+                          {marketData.commodities.silver.changePercent !== undefined && marketData.commodities.silver.value > 0 && (
+                            <Badge
+                              variant="outline"
+                              className={`text-xs ${
+                                marketData.commodities.silver.changePercent >= 0
+                                  ? 'text-green-600 dark:text-green-400 border-green-500/50'
+                                  : 'text-red-600 dark:text-red-400 border-red-500/50'
+                              }`}
+                            >
+                              {marketData.commodities.silver.changePercent >= 0 ? '+' : ''}
+                              {marketData.commodities.silver.changePercent.toFixed(2)}%
+                            </Badge>
+                          )}
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1">Silver (XAG/USD)</p>
+                      </div>
+
+                      {/* Oil */}
+                      <div>
+                        <div className="flex items-baseline gap-2 flex-wrap">
+                          <span className="text-xl font-bold text-foreground">
+                            {marketData.commodities.oil.value > 0 ? (
+                              `$${marketData.commodities.oil.value.toLocaleString('en-US', {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2,
+                              })}`
+                            ) : (
+                              <span className="text-muted-foreground text-sm">Loading...</span>
+                            )}
+                          </span>
+                          {marketData.commodities.oil.changePercent !== undefined && marketData.commodities.oil.value > 0 && (
+                            <Badge
+                              variant="outline"
+                              className={`text-xs ${
+                                marketData.commodities.oil.changePercent >= 0
+                                  ? 'text-green-600 dark:text-green-400 border-green-500/50'
+                                  : 'text-red-600 dark:text-red-400 border-red-500/50'
+                              }`}
+                            >
+                              {marketData.commodities.oil.changePercent >= 0 ? '+' : ''}
+                              {marketData.commodities.oil.changePercent.toFixed(2)}%
+                            </Badge>
+                          )}
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1">Oil (WTI)</p>
+                      </div>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
 

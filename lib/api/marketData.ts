@@ -463,6 +463,158 @@ export async function getMultipleStocks(symbols: string[]) {
 }
 
 /**
+ * Get Crypto Price Data
+ * Fetches from Finnhub API using crypto symbols
+ */
+export async function getCryptoData(symbol: string): Promise<MarketDataResponse> {
+  try {
+    if (!FINNHUB_KEY) {
+      throw new Error('FINNHUB_API_KEY is not configured');
+    }
+
+    // Finnhub uses BINANCE:BTCUSDT format for crypto
+    const finnhubSymbol = symbol === 'BTC' ? 'BINANCE:BTCUSDT' :
+                         symbol === 'ETH' ? 'BINANCE:ETHUSDT' :
+                         symbol === 'XRP' ? 'BINANCE:XRPUSDT' : symbol;
+
+    const response = await fetch(
+      `https://finnhub.io/api/v1/quote?symbol=${finnhubSymbol}&token=${FINNHUB_KEY}`,
+      {
+        next: { revalidate: 60 },
+      }
+    );
+
+    const contentType = response.headers.get('content-type');
+    const responseClone = response.clone();
+    
+    if (!response.ok) {
+      let errorMessage = `Finnhub API error: ${response.status} ${response.statusText}`;
+      
+      if (contentType && contentType.includes('application/json')) {
+        try {
+          const errorData = await responseClone.json();
+          if (errorData.error) {
+            errorMessage = `Finnhub API error: ${errorData.error}`;
+          }
+        } catch (e) {
+          // Ignore parsing errors
+        }
+      }
+      throw new Error(errorMessage);
+    }
+
+    if (!contentType || !contentType.includes('application/json')) {
+      throw new Error(`Expected JSON but got ${contentType}`);
+    }
+
+    const data = await response.json();
+    
+    if (data.error) {
+      throw new Error(`Finnhub API error: ${data.error}`);
+    }
+
+    if (data.c === undefined || data.c === null || data.c === 0) {
+      throw new Error(`Invalid data received for ${symbol}`);
+    }
+    
+    const changePercent = data.pc ? ((data.c - data.pc) / data.pc) * 100 : 0;
+    
+    return {
+      value: data.c,
+      change: data.pc ? data.c - data.pc : 0,
+      changePercent: changePercent,
+      timestamp: data.t ? new Date(data.t * 1000).toISOString() : new Date().toISOString(),
+    };
+  } catch (error) {
+    console.error(`Error fetching crypto data for ${symbol}:`, error);
+    if (error instanceof Error) {
+      throw error;
+    }
+    throw new Error(`Failed to fetch crypto data for ${symbol}: ${String(error)}`);
+  }
+}
+
+/**
+ * Get Commodity Price Data
+ * Fetches from FRED API (more reliable for commodities than Finnhub)
+ */
+export async function getCommodityData(symbol: string): Promise<MarketDataResponse> {
+  try {
+    if (!FRED_KEY) {
+      throw new Error('FRED_API_KEY is not configured');
+    }
+
+    // FRED API series IDs for commodities
+    const fredSeriesId = symbol === 'GOLD' ? 'GOLDAMGBD228NLBM' :  // Gold (London Fixing)
+                        symbol === 'SILVER' ? 'SLVPRUSD' :          // Silver Price USD
+                        symbol === 'OIL' ? 'DCOILWTICO' :           // Crude Oil WTI
+                        null;
+
+    if (!fredSeriesId) {
+      throw new Error(`Unsupported commodity symbol: ${symbol}`);
+    }
+
+    // Fetch from FRED API
+    const response = await fetch(
+      `https://api.stlouisfed.org/fred/series/observations?series_id=${fredSeriesId}&api_key=${FRED_KEY}&file_type=json&limit=2&sort_order=desc`,
+      {
+        next: { revalidate: 3600 }, // Cache for 1 hour (commodities update daily)
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`FRED API error: ${response.status} ${response.statusText}`);
+    }
+
+    const contentType = response.headers.get('content-type');
+    if (!contentType || !contentType.includes('application/json')) {
+      const text = await response.text();
+      throw new Error(`Expected JSON but got ${contentType}. Response: ${text.substring(0, 200)}`);
+    }
+
+    const data = await response.json();
+    
+    // Check for FRED API errors
+    if (data.error_code && data.error_message) {
+      throw new Error(`FRED API error: ${data.error_message}`);
+    }
+
+    if (!data.observations || data.observations.length === 0) {
+      throw new Error(`No ${symbol} data found in FRED API response`);
+    }
+    
+    const latestObservation = data.observations[0];
+    const previousObservation = data.observations[1];
+    
+    if (!latestObservation.value || latestObservation.value === '.') {
+      throw new Error(`Invalid ${symbol} value in FRED API response`);
+    }
+    
+    const value = parseFloat(latestObservation.value);
+    const previousValue = previousObservation && previousObservation.value !== '.' 
+      ? parseFloat(previousObservation.value) 
+      : value;
+    const change = value - previousValue;
+    const changePercent = previousValue !== 0 ? (change / previousValue) * 100 : 0;
+    
+    return {
+      value: value,
+      change: change,
+      changePercent: changePercent,
+      timestamp: latestObservation.date 
+        ? new Date(latestObservation.date + 'T16:00:00Z').toISOString()
+        : new Date().toISOString(),
+    };
+  } catch (error) {
+    console.error(`Error fetching commodity data for ${symbol}:`, error);
+    if (error instanceof Error) {
+      throw error;
+    }
+    throw new Error(`Failed to fetch commodity data for ${symbol}: ${String(error)}`);
+  }
+}
+
+/**
  * Get market news from Finnhub
  * Filters for crash/recession/market keywords and returns top 15 articles
  */
