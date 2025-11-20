@@ -1,9 +1,10 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Timeline } from 'vis-timeline/standalone';
-import { DataSet } from 'vis-data/peer';
 import { CombinedEconomicIndicators } from '@/hooks/use-economic-indicators';
+
+// Import CSS for vis-timeline
+import 'vis-timeline/styles/vis-timeline-graph2d.min.css';
 
 interface MarketTimelineProps {
   indicators?: CombinedEconomicIndicators;
@@ -23,8 +24,9 @@ interface TimelineEvent {
 
 export function MarketTimeline({ indicators, className }: MarketTimelineProps) {
   const timelineRef = useRef<HTMLDivElement>(null);
-  const timelineInstance = useRef<Timeline | null>(null);
+  const timelineInstance = useRef<any>(null);
   const [isClient, setIsClient] = useState(false);
+  const [isLibraryLoaded, setIsLibraryLoaded] = useState(false);
   const indicatorsRef = useRef<string>('');
   const resizeObserverRef = useRef<ResizeObserver | null>(null);
   const intersectionObserverRef = useRef<IntersectionObserver | null>(null);
@@ -33,15 +35,29 @@ export function MarketTimeline({ indicators, className }: MarketTimelineProps) {
   const rafIdsRef = useRef<number[]>([]);
   const isInitializingRef = useRef(false);
 
+  // Load vis-timeline library dynamically on client side
   useEffect(() => {
     setIsClient(true);
+    
+    // Dynamically import vis-timeline only on client
+    Promise.all([
+      import('vis-timeline/standalone'),
+      import('vis-data/peer')
+    ]).then(([timelineModule, dataModule]) => {
+      // Store modules globally for use in createTimeline
+      (window as any).visTimeline = timelineModule.Timeline;
+      (window as any).visDataSet = dataModule.DataSet;
+      setIsLibraryLoaded(true);
+    }).catch((error) => {
+      console.error('[Timeline] Failed to load vis-timeline library:', error);
+    });
   }, []);
 
   useEffect(() => {
-    console.log('[Timeline] useEffect triggered', { isClient, hasRef: !!timelineRef.current });
+    console.log('[Timeline] useEffect triggered', { isClient, isLibraryLoaded, hasRef: !!timelineRef.current });
     
-    if (!isClient || !timelineRef.current) {
-      console.log('[Timeline] Early return - not ready', { isClient, hasRef: !!timelineRef.current });
+    if (!isClient || !isLibraryLoaded || !timelineRef.current) {
+      console.log('[Timeline] Early return - not ready', { isClient, isLibraryLoaded, hasRef: !!timelineRef.current });
       return;
     }
 
@@ -472,6 +488,16 @@ export function MarketTimeline({ indicators, className }: MarketTimelineProps) {
           return;
         }
 
+        // Get dynamically loaded modules
+        const Timeline = (window as any).visTimeline;
+        const DataSet = (window as any).visDataSet;
+
+        if (!Timeline || !DataSet) {
+          console.error('[Timeline] Timeline or DataSet not loaded yet');
+          isInitializingRef.current = false;
+          return;
+        }
+
         const itemsDataSet = new DataSet(events);
         const groupsDataSet = new DataSet(groups);
         
@@ -752,10 +778,10 @@ export function MarketTimeline({ indicators, className }: MarketTimelineProps) {
         }
       }
     };
-  }, [isClient, indicators]);
+  }, [isClient, isLibraryLoaded, indicators]);
 
-  if (!isClient) {
-    console.log('[Timeline] Rendering: Not client-side yet');
+  if (!isClient || !isLibraryLoaded) {
+    console.log('[Timeline] Rendering: Not ready yet', { isClient, isLibraryLoaded });
     return (
       <div className="w-full h-[500px] bg-slate-800/50 rounded-lg border border-slate-700 flex items-center justify-center">
         <div className="text-slate-400">Loading timeline...</div>
