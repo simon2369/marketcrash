@@ -3,9 +3,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { CombinedEconomicIndicators } from '@/hooks/use-economic-indicators';
 
-// Import CSS for vis-timeline
-import 'vis-timeline/styles/vis-timeline-graph2d.min.css';
-
 interface MarketTimelineProps {
   indicators?: CombinedEconomicIndicators;
   className?: string;
@@ -27,6 +24,7 @@ export function MarketTimeline({ indicators, className }: MarketTimelineProps) {
   const timelineInstance = useRef<any>(null);
   const [isClient, setIsClient] = useState(false);
   const [isLibraryLoaded, setIsLibraryLoaded] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const indicatorsRef = useRef<string>('');
   const resizeObserverRef = useRef<ResizeObserver | null>(null);
   const intersectionObserverRef = useRef<IntersectionObserver | null>(null);
@@ -37,6 +35,8 @@ export function MarketTimeline({ indicators, className }: MarketTimelineProps) {
 
   // Load vis-timeline library dynamically on client side
   useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
     setIsClient(true);
     
     // Dynamically import vis-timeline only on client
@@ -44,12 +44,23 @@ export function MarketTimeline({ indicators, className }: MarketTimelineProps) {
       import('vis-timeline/standalone'),
       import('vis-data/peer')
     ]).then(([timelineModule, dataModule]) => {
+      console.log('[Timeline] Library loaded successfully', {
+        hasTimeline: !!timelineModule.Timeline,
+        hasDataSet: !!dataModule.DataSet
+      });
+      
       // Store modules globally for use in createTimeline
       (window as any).visTimeline = timelineModule.Timeline;
       (window as any).visDataSet = dataModule.DataSet;
       setIsLibraryLoaded(true);
     }).catch((error) => {
       console.error('[Timeline] Failed to load vis-timeline library:', error);
+      console.error('[Timeline] Error details:', {
+        message: error?.message,
+        stack: error?.stack,
+        name: error?.name
+      });
+      setLoadError(error instanceof Error ? error.message : 'Failed to load timeline library');
     });
   }, []);
 
@@ -779,6 +790,17 @@ export function MarketTimeline({ indicators, className }: MarketTimelineProps) {
       }
     };
   }, [isClient, isLibraryLoaded, indicators]);
+
+  if (loadError) {
+    return (
+      <div className="w-full h-[500px] bg-slate-800/50 rounded-lg border border-slate-700 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-red-400 mb-2">⚠️ Failed to load timeline</div>
+          <div className="text-slate-400 text-sm">{loadError}</div>
+        </div>
+      </div>
+    );
+  }
 
   if (!isClient || !isLibraryLoaded) {
     console.log('[Timeline] Rendering: Not ready yet', { isClient, isLibraryLoaded });

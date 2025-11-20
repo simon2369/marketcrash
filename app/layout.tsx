@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import "vis-timeline/styles/vis-timeline-graph2d.min.css";
 import { Providers } from "@/components/providers";
 
 const geistSans = Geist({
