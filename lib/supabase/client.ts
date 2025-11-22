@@ -9,8 +9,12 @@ if (!supabaseUrl || !supabaseAnonKey) {
   );
 }
 
+// TypeScript type assertion - we've already checked they exist above
+const url: string = supabaseUrl;
+const anonKey: string = supabaseAnonKey;
+
 // Client-side Supabase client
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export const supabase = createClient(url, anonKey);
 
 // Server-side Supabase client (for API routes and server components)
 export function createServerClient() {
@@ -18,11 +22,11 @@ export function createServerClient() {
   
   if (!serviceRoleKey) {
     // Fallback to anon key if service role key is not available
-    return createClient(supabaseUrl, supabaseAnonKey);
+    return createClient(url, anonKey);
   }
   
   // Use service role key for server-side operations that need elevated permissions
-  return createClient(supabaseUrl, serviceRoleKey, {
+  return createClient(url, serviceRoleKey, {
     auth: {
       autoRefreshToken: false,
       persistSession: false,
