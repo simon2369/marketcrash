@@ -10,17 +10,24 @@ if (!connectionString) {
   console.warn('⚠️ Database connection string not found. Set POSTGRES_PRISMA_URL or DATABASE_URL in your environment variables.');
 }
 
-// Disable SSL certificate validation for Supabase connections
-// This is safe for Supabase as they use valid certificates, but Node.js may have issues
-if (connectionString && process.env.NODE_ENV !== 'production') {
-  process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
-}
+// Determine if this is a Supabase connection
+const isSupabaseConnection = connectionString 
+  ? (connectionString.includes('supabase') || 
+     connectionString.includes('pooler') ||
+     connectionString.includes('supabase.co'))
+  : false;
+
+// Configure SSL for Supabase connections
+// Supabase requires SSL but may have certificate chain issues in some environments
+const sslConfig = isSupabaseConnection 
+  ? {
+      rejectUnauthorized: false, // Allow self-signed certificates for Supabase
+    }
+  : undefined;
 
 const pool = connectionString ? new Pool({
   connectionString,
-  ssl: connectionString.includes('supabase') || connectionString.includes('pooler') ? {
-    rejectUnauthorized: false
-  } : undefined,
+  ssl: sslConfig,
   max: 10, // Maximum number of clients in the pool
   idleTimeoutMillis: 30000,
   connectionTimeoutMillis: 10000,
