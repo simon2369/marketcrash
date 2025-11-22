@@ -34,11 +34,12 @@ export function generateToken(): string {
 
 /**
  * Send verification email to subscriber
+ * Returns the message ID from Mailgun
  */
 export async function sendVerificationEmail(
   email: string,
   verificationToken: string
-): Promise<void> {
+): Promise<string | undefined> {
   const verificationUrl = `${BASE_URL}/api/verify?token=${verificationToken}`;
   
   const subject = 'Verify your subscription to Market Crash Monitor';
@@ -86,7 +87,7 @@ export async function sendVerificationEmail(
     ${BASE_URL}
   `;
 
-  await sendEmail(email, subject, html, text);
+  return await sendEmail(email, subject, html, text);
 }
 
 /**
