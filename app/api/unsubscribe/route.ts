@@ -38,9 +38,10 @@ export async function GET(req: NextRequest) {
     const result = await db.query(query, params);
 
     if (result.rows.length === 0) {
-      // Return a user-friendly error page instead of JSON
+      // Return a user-friendly error page instead of JSON (scroll to subscription form)
       const errorUrl = new URL('/newsletter', req.url);
       errorUrl.searchParams.set('unsubscribe_error', 'not_found');
+      errorUrl.hash = 'subscription-form';
       return NextResponse.redirect(errorUrl);
     }
 
@@ -49,7 +50,7 @@ export async function GET(req: NextRequest) {
     // Check if already unsubscribed
     if (subscriber.status === 'unsubscribed') {
       return NextResponse.redirect(
-        new URL('/newsletter?unsubscribed=true&already=true', req.url)
+        new URL('/newsletter?unsubscribed=true&already=true#subscription-form', req.url)
       );
     }
 
@@ -77,16 +78,17 @@ export async function GET(req: NextRequest) {
       // Don't fail the unsubscribe if logging fails
     }
 
-    // Redirect to confirmation page
+    // Redirect to confirmation page (scroll to subscription form)
     return NextResponse.redirect(
-      new URL('/newsletter?unsubscribed=true', req.url)
+      new URL('/newsletter?unsubscribed=true#subscription-form', req.url)
     );
   } catch (error) {
     console.error('Unsubscribe error:', error);
     
-    // Redirect to error page instead of JSON for GET requests
+    // Redirect to error page instead of JSON for GET requests (scroll to subscription form)
     const errorUrl = new URL('/newsletter', req.url);
     errorUrl.searchParams.set('unsubscribe_error', 'server_error');
+    errorUrl.hash = 'subscription-form';
     return NextResponse.redirect(errorUrl);
   }
 }
