@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { AlertTriangle, ChevronDown, ChevronUp, X, AlertCircle, Info } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { CombinedEconomicIndicators } from '@/hooks/use-economic-indicators';
@@ -21,9 +21,61 @@ interface Alert {
   message: string;
 }
 
+/**
+ * Get dismissed alert keys from localStorage
+ * Uses format: "indicator-severity" (e.g., "cape-critical", "yield-warning")
+ */
+function getDismissedAlertKeys(): Set<string> {
+  if (typeof window === 'undefined') return new Set();
+  
+  try {
+    const stored = localStorage.getItem('dismissed-alert-keys');
+    if (stored) {
+      const parsed = JSON.parse(stored) as string[];
+      return new Set(parsed);
+    }
+  } catch (error) {
+    console.error('Error reading dismissed alerts from localStorage:', error);
+  }
+  
+  return new Set();
+}
+
+/**
+ * Save dismissed alert keys to localStorage
+ */
+function saveDismissedAlertKeys(dismissed: Set<string>) {
+  if (typeof window === 'undefined') return;
+  
+  try {
+    localStorage.setItem('dismissed-alert-keys', JSON.stringify(Array.from(dismissed)));
+  } catch (error) {
+    console.error('Error saving dismissed alerts to localStorage:', error);
+  }
+}
+
+/**
+ * Generate alert key from alert ID (extracts indicator and severity)
+ * e.g., "cape-critical" -> "cape-critical", "yield-warning" -> "yield-warning"
+ */
+function getAlertKey(alertId: string): string {
+  // Alert IDs are in format: "indicator-severity" or "indicator-critical-timestamp"
+  // Extract just the indicator and severity parts
+  const parts = alertId.split('-');
+  if (parts.length >= 2) {
+    return `${parts[0]}-${parts[1]}`; // e.g., "cape-critical"
+  }
+  return alertId;
+}
+
 export function AlertTopBar({ indicators, className }: AlertTopBarProps) {
   const [isExpanded, setIsExpanded] = useState(false);
-  const [dismissedAlerts, setDismissedAlerts] = useState<Set<string>>(new Set());
+  const [dismissedAlertKeys, setDismissedAlertKeys] = useState<Set<string>>(new Set());
+
+  // Load dismissed alerts from localStorage on mount
+  useEffect(() => {
+    setDismissedAlertKeys(getDismissedAlertKeys());
+  }, []);
 
   // Generate alerts from indicators
   const alerts: Alert[] = [];
@@ -126,19 +178,28 @@ export function AlertTopBar({ indicators, className }: AlertTopBarProps) {
     }
   }
 
-  // Filter out dismissed alerts
-  const activeAlerts = alerts.filter(alert => !dismissedAlerts.has(alert.id));
+  // Filter out dismissed alerts by checking alert keys
+  const activeAlerts = alerts.filter(alert => {
+    const alertKey = getAlertKey(alert.id);
+    return !dismissedAlertKeys.has(alertKey);
+  });
 
   // Count by severity
   const criticalCount = activeAlerts.filter(a => a.severity === 'critical').length;
   const warningCount = activeAlerts.filter(a => a.severity === 'warning').length;
 
   const handleDismiss = (alertId: string) => {
-    setDismissedAlerts(prev => new Set([...prev, alertId]));
+    const alertKey = getAlertKey(alertId);
+    const newDismissed = new Set([...dismissedAlertKeys, alertKey]);
+    setDismissedAlertKeys(newDismissed);
+    saveDismissedAlertKeys(newDismissed);
   };
 
   const handleClearAll = () => {
-    setDismissedAlerts(new Set(alerts.map(a => a.id)));
+    const allAlertKeys = new Set(alerts.map(a => getAlertKey(a.id)));
+    const newDismissed = new Set([...dismissedAlertKeys, ...allAlertKeys]);
+    setDismissedAlertKeys(newDismissed);
+    saveDismissedAlertKeys(newDismissed);
   };
 
   // Don't render if no active alerts

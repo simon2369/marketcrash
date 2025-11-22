@@ -1,8 +1,15 @@
 import Link from 'next/link';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { Navbar } from '@/components/layout/navbar';
+import SubscriptionForm from '@/components/SubscriptionForm';
 
-export default function NewsletterPage() {
+export default function NewsletterPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ verified?: string; unsubscribed?: string; already?: string; unsubscribe_error?: string }> | { verified?: string; unsubscribed?: string; already?: string; unsubscribe_error?: string };
+}) {
+  // Handle both sync and async searchParams (Next.js 16 compatibility)
+  const params = searchParams instanceof Promise ? null : searchParams;
   return (
     <div className="min-h-screen bg-white dark:bg-slate-900 text-slate-900 dark:text-white">
       {/* Header */}
@@ -59,6 +66,16 @@ export default function NewsletterPage() {
                 Quick-hit updates tracking the most important weekly changes in our key indicators, notable market events, and any emerging warning signals that require immediate attention. These concise briefings keep you informed between monthly reports without overwhelming detail.
               </p>
             </div>
+          </div>
+
+          {/* Subscribe Button */}
+          <div className="mt-8 pt-6 border-t border-slate-700">
+            <a
+              href="#subscription-form"
+              className="inline-flex items-center justify-center w-full px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold text-lg rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
+            >
+              📬 Subscribe to Our Newsletter
+            </a>
           </div>
         </div>
 
@@ -136,11 +153,43 @@ export default function NewsletterPage() {
         </div>
 
         {/* Disclaimer */}
-        <div className="bg-yellow-900/20 border border-yellow-700/50 rounded-lg p-6">
+        <div className="bg-yellow-900/20 border border-yellow-700/50 rounded-lg p-6 mb-8">
           <h3 className="text-lg font-semibold mb-2 text-yellow-200">Disclaimer</h3>
           <p className="text-yellow-100/90 leading-relaxed">
             These newsletters provide educational market analysis and are not investment advice. Market timing is extremely difficult, and historical patterns do not guarantee future outcomes. Always consult qualified financial advisors before making investment decisions.
           </p>
+        </div>
+
+        {/* Subscription Form */}
+        <div id="subscription-form" className="mb-8 scroll-mt-8">
+          {params?.verified && (
+            <div className="mb-6 p-4 rounded-lg bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800">
+              <p className="text-green-800 dark:text-green-200">
+                {params.already === 'true'
+                  ? '✅ Your email is already verified!'
+                  : '✅ Email verified successfully! Welcome to Market Crash Monitor.'}
+              </p>
+            </div>
+          )}
+          {params?.unsubscribed && (
+            <div className="mb-6 p-4 rounded-lg bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800">
+              <p className="text-blue-800 dark:text-blue-200">
+                {params.already === 'true'
+                  ? 'ℹ️ You are already unsubscribed.'
+                  : '✅ Successfully unsubscribed. We\'re sorry to see you go!'}
+              </p>
+            </div>
+          )}
+          {params?.unsubscribe_error && (
+            <div className="mb-6 p-4 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
+              <p className="text-red-800 dark:text-red-200">
+                {params.unsubscribe_error === 'not_found'
+                  ? '❌ Invalid unsubscribe link. Please contact support if you need assistance.'
+                  : '❌ An error occurred. Please try again or contact support.'}
+              </p>
+            </div>
+          )}
+          <SubscriptionForm />
         </div>
       </div>
     </div>

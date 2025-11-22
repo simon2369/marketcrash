@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -379,11 +380,50 @@ export function IndicatorGrid() {
 
   return (
     <div className="w-full">
-      <div className="mb-6">
-        <h2 className="text-xl font-semibold text-white">Tier 1 Crash Indicators</h2>
-        <p className="mt-1 text-sm text-slate-400">
-          Key metrics that historically signal market crashes
-        </p>
+      <div className="mb-6 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+        <div className="flex-1">
+          <h2 className="text-xl font-semibold text-white">Tier 1 Crash Indicators</h2>
+          <p className="mt-1 text-sm text-slate-400">
+            Key metrics that historically signal market crashes
+          </p>
+        </div>
+        
+        {/* Subscribe Button */}
+        <Link
+          href="/newsletter#subscription-form"
+          className="group flex-shrink-0"
+        >
+          <div className="bg-gradient-to-r from-slate-700/80 to-slate-600/80 hover:from-slate-600/90 hover:to-slate-500/90 rounded-lg border border-slate-500/50 p-4 shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 min-w-[240px] backdrop-blur-sm">
+            <div className="flex items-center gap-3">
+              <div className="flex-shrink-0 w-10 h-10 bg-amber-500/20 rounded-lg flex items-center justify-center group-hover:bg-amber-500/30 transition-colors border border-amber-500/30">
+                <span className="text-xl">🚨</span>
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="text-white font-semibold text-sm leading-tight mb-1">
+                  Subscribe to Real-time Alerts
+                </div>
+                <div className="text-slate-300 text-xs leading-tight">
+                  Instant notifications when crash indicators are triggered
+                </div>
+              </div>
+              <div className="flex-shrink-0 text-slate-300 group-hover:text-white group-hover:translate-x-1 transition-all">
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 5l7 7-7 7"
+                  />
+                </svg>
+              </div>
+            </div>
+          </div>
+        </Link>
       </div>
 
       {/* Error State */}

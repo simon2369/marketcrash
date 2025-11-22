@@ -99,13 +99,15 @@ function generateAlerts(indicators: CombinedEconomicIndicators | undefined): Ale
 }
 
 /**
- * Get dismissed alerts from localStorage
+ * Get dismissed alert keys from localStorage
+ * Uses format: "indicator-severity" (e.g., "cape-critical", "yieldCurve-warning")
+ * This persists across alert regenerations since alert IDs include timestamps
  */
-function getDismissedAlerts(): Set<string> {
+function getDismissedAlertKeys(): Set<string> {
   if (typeof window === 'undefined') return new Set();
   
   try {
-    const stored = localStorage.getItem('dismissed-alerts');
+    const stored = localStorage.getItem('dismissed-alert-keys');
     if (stored) {
       const parsed = JSON.parse(stored) as string[];
       return new Set(parsed);
@@ -118,16 +120,24 @@ function getDismissedAlerts(): Set<string> {
 }
 
 /**
- * Save dismissed alerts to localStorage
+ * Save dismissed alert keys to localStorage
  */
-function saveDismissedAlerts(dismissed: Set<string>) {
+function saveDismissedAlertKeys(dismissed: Set<string>) {
   if (typeof window === 'undefined') return;
   
   try {
-    localStorage.setItem('dismissed-alerts', JSON.stringify(Array.from(dismissed)));
+    localStorage.setItem('dismissed-alert-keys', JSON.stringify(Array.from(dismissed)));
   } catch (error) {
     console.error('Error saving dismissed alerts to localStorage:', error);
   }
+}
+
+/**
+ * Generate alert key from alert (indicator-severity format)
+ * e.g., alert with indicatorId="cape" and severity="critical" -> "cape-critical"
+ */
+function getAlertKey(alert: Alert): string {
+  return `${alert.indicatorId}-${alert.severity}`;
 }
 
 /**
@@ -136,22 +146,25 @@ function saveDismissedAlerts(dismissed: Set<string>) {
  * Compact, collapsible design to minimize dashboard disruption
  */
 export function AlertPanel({ indicators, className, position = 'sticky' }: AlertPanelProps) {
-  const [dismissedAlerts, setDismissedAlerts] = useState<Set<string>>(new Set());
+  const [dismissedAlertKeys, setDismissedAlertKeys] = useState<Set<string>>(new Set());
   const [isExpanded, setIsExpanded] = useState(false);
   const [isMinimized, setIsMinimized] = useState(true);
 
   // Load dismissed alerts from localStorage on mount
   useEffect(() => {
-    setDismissedAlerts(getDismissedAlerts());
+    setDismissedAlertKeys(getDismissedAlertKeys());
   }, []);
 
   // Generate alerts from indicators
   const allAlerts = useMemo(() => generateAlerts(indicators), [indicators]);
 
-  // Filter out dismissed alerts
+  // Filter out dismissed alerts by checking alert keys (indicator-severity)
   const activeAlerts = useMemo(
-    () => allAlerts.filter((alert) => !dismissedAlerts.has(alert.id)),
-    [allAlerts, dismissedAlerts]
+    () => allAlerts.filter((alert) => {
+      const alertKey = getAlertKey(alert);
+      return !dismissedAlertKeys.has(alertKey);
+    }),
+    [allAlerts, dismissedAlertKeys]
   );
 
   // Group alerts by severity
@@ -160,18 +173,21 @@ export function AlertPanel({ indicators, className, position = 'sticky' }: Alert
 
   // Dismiss an alert
   const handleDismiss = (alertId: string) => {
-    const newDismissed = new Set(dismissedAlerts);
-    newDismissed.add(alertId);
-    setDismissedAlerts(newDismissed);
-    saveDismissedAlerts(newDismissed);
+    const alert = allAlerts.find(a => a.id === alertId);
+    if (!alert) return;
+    
+    const alertKey = getAlertKey(alert);
+    const newDismissed = new Set([...dismissedAlertKeys, alertKey]);
+    setDismissedAlertKeys(newDismissed);
+    saveDismissedAlertKeys(newDismissed);
   };
 
   // Dismiss all alerts
   const handleDismissAll = () => {
-    const allAlertIds = new Set(activeAlerts.map((alert) => alert.id));
-    const newDismissed = new Set([...dismissedAlerts, ...allAlertIds]);
-    setDismissedAlerts(newDismissed);
-    saveDismissedAlerts(newDismissed);
+    const allAlertKeys = new Set(activeAlerts.map(alert => getAlertKey(alert)));
+    const newDismissed = new Set([...dismissedAlertKeys, ...allAlertKeys]);
+    setDismissedAlertKeys(newDismissed);
+    saveDismissedAlertKeys(newDismissed);
   };
 
   if (activeAlerts.length === 0) {
