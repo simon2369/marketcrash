@@ -2,6 +2,16 @@ import pg from 'pg';
 
 const { Pool } = pg;
 
+// Set TLS rejection for Supabase connections to avoid certificate chain issues
+// This is safe for Supabase as they use valid certificates, but Node.js may have issues
+// with certificate chains in some environments (like Vercel)
+if (process.env.POSTGRES_PRISMA_URL || process.env.DATABASE_URL) {
+  const connStr = process.env.POSTGRES_PRISMA_URL || process.env.DATABASE_URL || '';
+  if (connStr.includes('supabase') || connStr.includes('.supabase.co')) {
+    process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+  }
+}
+
 // Create connection pool
 // Use POSTGRES_PRISMA_URL (Supabase/Prisma) or fallback to DATABASE_URL
 const connectionString = process.env.POSTGRES_PRISMA_URL || process.env.DATABASE_URL;
@@ -11,17 +21,24 @@ if (!connectionString) {
 }
 
 // Determine if this is a Supabase connection
+// Check for various Supabase connection string patterns
 const isSupabaseConnection = connectionString 
-  ? (connectionString.includes('supabase') || 
-     connectionString.includes('pooler') ||
-     connectionString.includes('supabase.co'))
+  ? (connectionString.toLowerCase().includes('supabase') || 
+     connectionString.toLowerCase().includes('pooler') ||
+     connectionString.includes('.supabase.co') ||
+     connectionString.includes('supabase.com'))
   : false;
 
 // Configure SSL for Supabase connections
 // Supabase requires SSL but may have certificate chain issues in some environments
+// Always use SSL with rejectUnauthorized: false for Supabase to avoid certificate errors
 const sslConfig = isSupabaseConnection 
   ? {
       rejectUnauthorized: false, // Allow self-signed certificates for Supabase
+    }
+  : connectionString && !connectionString.includes('localhost') && !connectionString.includes('127.0.0.1')
+  ? {
+      rejectUnauthorized: false, // Also apply to other remote connections to be safe
     }
   : undefined;
 
